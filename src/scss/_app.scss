@@ -1,0 +1,13 @@
+#app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+
+    #app-canvas {
+        width: 900px;
+        height: 900px;
+        box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.4);
+    }
+}

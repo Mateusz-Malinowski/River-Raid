@@ -1,0 +1,19 @@
+export default class Vector2 {
+  public x: number;
+  public y: number;
+
+  public constructor(x: number = 0, y: number = 0) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public copy(vector2: Vector2): void {
+    this.x = vector2.x;
+    this.y = vector2.y;
+  }
+
+  public set(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+  }
+}
