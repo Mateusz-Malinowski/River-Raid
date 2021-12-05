@@ -4,15 +4,18 @@ import CanvasObject from "../core/CanvasObject";
 export default class Rectangle extends CanvasObject {
   public width: number;
   public height: number;
+  public backgroundColor: string;
 
-  public constructor(width: number, height: number) {
+  public constructor(width: number, height: number, backgroundColor: string) {
     super();
 
     this.width = width;
     this.height = height;
+    this.backgroundColor = backgroundColor;
   }
 
   public draw(): void {
-    Canvas.ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+    Canvas.ctx.fillStyle = this.backgroundColor;
+    Canvas.ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
 }

@@ -1,9 +1,16 @@
+import Canvas from "./core/Canvas";
 import Scene from "./core/Scene";
 import Vector2 from "./core/Vector2";
+import GameInfo from "./groups/GameInfo";
 import Rectangle from "./objects/Rectangle";
 
 export default class Game {
   private scene: Scene;
+  private gameInfoHeight: number = 250;
+  private gameInfo: GameInfo;
+
+  private score: number = 0;
+  private numberOfLives: number = 3;
 
   public constructor(scene: Scene) {
     this.scene = scene;
@@ -11,13 +18,23 @@ export default class Game {
   }
 
   private init(): void {
-    const rectangle1 = new Rectangle(100, 100);
-    const rectangle2 = new Rectangle(200, 200);
-    this.scene.add(rectangle1);
-    this.scene.add(rectangle2);
+    this.addBackground();
+    this.addGameInfo();
+  }
+
+  private addBackground(): void {
+    const background = new Rectangle(Canvas.width, Canvas.height, '#666');
+    this.scene.add(background);
+  }
+
+  private addGameInfo(): void {
+    this.gameInfo = new GameInfo(this.gameInfoHeight);
+    this.gameInfo.setPosition(0, Canvas.height - this.gameInfoHeight);
+    this.gameInfo.setScore(this.score);
+    this.gameInfo.setNumberOfLives(this.numberOfLives);
+    this.scene.add(this.gameInfo);
   }
 
   public render = (delta: number): void => {
-    
   }
 }

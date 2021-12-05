@@ -18,4 +18,13 @@ export default class Canvas {
   public static clear(): void {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
+
+  public static reset(): void {
+    this.ctx.lineWidth = 1;
+    this.ctx.fillStyle = '#000';
+    this.ctx.strokeStyle = '#000';
+    this.ctx.font = '10px sans-serif';
+    this.ctx.textBaseline = 'alphabetic';
+    this.ctx.textAlign = 'start';
+  }
 }
