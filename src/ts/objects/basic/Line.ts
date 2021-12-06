@@ -1,6 +1,6 @@
-import Canvas from "../core/Canvas";
-import CanvasObject from "../core/CanvasObject";
-import Vector2 from "../core/Vector2";
+import Canvas from "../../core/Canvas";
+import CanvasObject from "../../core/CanvasObject";
+import Vector2 from "../../core/Vector2";
 
 export default class Line extends CanvasObject {
   public vector: Vector2;

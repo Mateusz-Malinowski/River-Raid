@@ -1,11 +1,11 @@
 import Assets from "./core/Assets";
 import Canvas from "./core/Canvas";
+import Keyboard from "./core/Keyboard";
 import Scene from "./core/Scene";
 import Vector2 from "./core/Vector2";
 import GameInfo from "./groups/GameInfo";
 import ImageObject from "./objects/ImageObject";
-import Plane from "./objects/Plane";
-import Rectangle from "./objects/Rectangle";
+import Rectangle from "./objects/basic/Rectangle";
 import Player from "./Player";
 
 export default class Game {
@@ -47,17 +47,15 @@ export default class Game {
   }
 
   private addPlayer(): void {
-    const plane = new Plane(80, 80);
-    this.cameraOffset -= 80;
-    this.player = new Player(0.05, plane);
+    this.cameraOffset -= 120;
+    this.player = new Player(0.1, 2, 1, 1, 0.05);
     this.scene.add(this.player.object);
   }
 
   public render = (delta: number): void => {
-    const playerPosition = this.player.getPosition();
-    playerPosition.add(this.player.velocity * delta, this.player.velocity * delta);
-
-    this.player.setPosition(playerPosition);
+    this.scene.remove(this.player.object);
+    this.player.render(delta);
+    this.scene.add(this.player.object);
 
     // follow the player on y axis
     this.scene.camera.position.set(0, this.player.getPosition().y - this.cameraOffset);

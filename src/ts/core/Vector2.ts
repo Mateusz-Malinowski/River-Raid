@@ -7,9 +7,13 @@ export default class Vector2 {
     this.y = y;
   }
 
-  public copy(vector2: Vector2): void {
-    this.x = vector2.x;
-    this.y = vector2.y;
+  public copy(vector2?: Vector2): Vector2 {
+    if (vector2) {
+      this.x = vector2.x;
+      this.y = vector2.y;
+    }
+
+    return this;
   }
 
   public set(x: number, y: number): void {

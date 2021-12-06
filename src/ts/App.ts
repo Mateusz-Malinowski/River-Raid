@@ -1,6 +1,7 @@
 import Assets from "./core/Assets";
 import Camera from "./core/Camera";
 import Canvas from "./core/Canvas";
+import Keyboard from "./core/Keyboard";
 import Renderer from "./core/Renderer";
 import Scene from "./core/Scene";
 import Game from "./Game";
@@ -19,6 +20,7 @@ export default class App {
 
   private async init(): Promise<void> {
     await Assets.loadImages();
+    Keyboard.create();
     
     Canvas.create(this.canvasWidth, this.canvasHeight);
     this.gameCamera = new Camera();

@@ -1,9 +1,9 @@
 import CanvasGroup from "../core/CanvasGroup";
 import Vector2 from "../core/Vector2";
-import Line from "../objects/Line";
-import Rectangle from "../objects/Rectangle";
-import StrokeRectangle from "../objects/StrokeRectangle";
-import Text from "../objects/Text";
+import Line from "../objects/basic/Line";
+import Rectangle from "../objects/basic/Rectangle";
+import StrokeRectangle from "../objects/basic/StrokeRectangle";
+import Text from "../objects/basic/Text";
 
 export default class FuelIndicator extends CanvasGroup {
   public width: number;
