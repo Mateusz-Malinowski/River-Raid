@@ -23,6 +23,7 @@ export default class Scene {
     for (const element of this.elements) {
       if (element.type == CanvasType.Object) {
         const object = element as CanvasObject;
+        object.realPosition.copy(object.position);
         this.drawObject(object);
         continue;
       }

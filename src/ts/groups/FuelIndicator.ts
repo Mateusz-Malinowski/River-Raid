@@ -12,6 +12,7 @@ export default class FuelIndicator extends CanvasGroup {
   private hand: Rectangle;
   private color: string = '#000';
   private strokeWidth: number = 6;
+  private thresholdMargin: number = 20;
   private thresholdWidth: number = 20;
   private thresholdHeight: number = 20;
   private halfThresholdWidth: number = 8;
@@ -32,12 +33,13 @@ export default class FuelIndicator extends CanvasGroup {
   }
 
   public setHand(fraction: number): void {
-    const maxValue = this.width - this.handWidth;
-    this.hand.position.set(fraction * maxValue, this.hand.position.y);
+    const maxValue = this.width - this.handWidth - this.thresholdMargin;
+    const minValue = this.thresholdMargin;
+    this.hand.position.set(minValue + fraction * (maxValue - minValue), this.hand.position.y);
   }
 
   private addElements(): void {
-    const border = new StrokeRectangle(this.width, this.height, this.color, 6);
+    const border = new StrokeRectangle(this.width, this.height, this.color, this.strokeWidth);
     const emptyThreshold = new Rectangle(this.thresholdWidth, this.thresholdHeight, this.color);
     const halfThreshold = new Rectangle(this.halfThresholdWidth, this.halfThresholdHeight, this.color);
     const fullThreshold = new Rectangle(this.thresholdWidth, this.thresholdHeight, this.color);
@@ -48,9 +50,9 @@ export default class FuelIndicator extends CanvasGroup {
     const halfText2 = new Text('2', this.color, 'bold 40px arial', 'top');
     this.hand = new Rectangle(this.handWidth, this.handHeight, this.handColor);
 
-    emptyThreshold.position.set(20, 0);
+    emptyThreshold.position.set(this.thresholdMargin, 0);
     halfThreshold.position.set(this.width / 2 - this.halfThresholdWidth / 2, 0);
-    fullThreshold.position.set(this.width - this.thresholdWidth - 20, 0);
+    fullThreshold.position.set(this.width - this.thresholdWidth - this.thresholdMargin, 0);
     emptyText.position.set(15, this.thresholdHeight + 2);
     fullText.position.set(this.width - 25, this.thresholdHeight + 2);
     halfText1.position.set(this.width / 2 - 30, this.thresholdHeight - 8);
