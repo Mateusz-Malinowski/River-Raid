@@ -16,8 +16,8 @@ export default class Line extends CanvasObject {
   public draw(): void {
     Canvas.ctx.lineWidth = this.lineWidth;
     Canvas.ctx.beginPath();
-    Canvas.ctx.moveTo(this.position.x, this.position.y);
-    Canvas.ctx.lineTo(this.position.x + this.vector.x, this.position.y + this.vector.y);
+    Canvas.ctx.moveTo(this.realPosition.x, this.realPosition.y);
+    Canvas.ctx.lineTo(this.realPosition.x + this.vector.x, this.realPosition.y + this.vector.y);
     Canvas.ctx.stroke();
   }
 }

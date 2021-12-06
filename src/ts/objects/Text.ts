@@ -23,6 +23,6 @@ export default class Text extends CanvasObject {
     Canvas.ctx.font = this.font;
     Canvas.ctx.textBaseline = this.textBaseline;
     Canvas.ctx.textAlign = this.textAlign;
-    Canvas.ctx.fillText(this.content, this.position.x, this.position.y);
+    Canvas.ctx.fillText(this.content, this.realPosition.x, this.realPosition.y);
   }
 }

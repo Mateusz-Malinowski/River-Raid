@@ -13,6 +13,7 @@ const idGenerator = id();
 
 export default abstract class CanvasObject {
   private id: number = idGenerator.next().value;
+  public realPosition: Vector2 = new Vector2(0, 0);
   public type: CanvasType = CanvasType.Object;
   public position: Vector2 = new Vector2(0, 0);
   public abstract draw(): void;

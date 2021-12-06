@@ -16,6 +16,6 @@ export default class Rectangle extends CanvasObject {
 
   public draw(): void {
     Canvas.ctx.fillStyle = this.backgroundColor;
-    Canvas.ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    Canvas.ctx.fillRect(this.realPosition.x, this.realPosition.y, this.width, this.height);
   }
 }

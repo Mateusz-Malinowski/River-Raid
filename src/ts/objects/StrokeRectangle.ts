@@ -19,6 +19,6 @@ export default class StrokeRectangle extends CanvasObject {
   public draw(): void {
     Canvas.ctx.strokeStyle = this.strokeColor;
     Canvas.ctx.lineWidth = this.lineWidth;
-    Canvas.ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+    Canvas.ctx.strokeRect(this.realPosition.x, this.realPosition.y, this.width, this.height);
   }
 }

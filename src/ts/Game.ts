@@ -29,12 +29,14 @@ export default class Game {
 
   private addGameInfo(): void {
     this.gameInfo = new GameInfo(this.gameInfoHeight);
-    this.gameInfo.setPosition(0, Canvas.height - this.gameInfoHeight);
+    this.gameInfo.position.set(0, Canvas.height - this.gameInfoHeight);
     this.gameInfo.setScore(this.score);
     this.gameInfo.setNumberOfLives(this.numberOfLives);
+    this.gameInfo.fuelIndicator.setHand(1);
     this.scene.add(this.gameInfo);
   }
 
   public render = (delta: number): void => {
+
   }
 }
