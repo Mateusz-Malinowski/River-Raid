@@ -15,6 +15,7 @@ export default class GameInfo extends CanvasGroup {
   private logoHeight: number = 62;
   private fuelIndicatorWidth: number = 350;
   private fuelIndicatorHeight: number = 80;
+  private textColor: string = 'rgb(232 232 92)';
   
   public fuelIndicator: FuelIndicator;
   private scoreText: Text;
@@ -37,13 +38,13 @@ export default class GameInfo extends CanvasGroup {
   }
 
   private addElements(): void {
-    const background = new Rectangle(Canvas.width, this.height, '#5b5866');
-    const line = new Line(new Vector2(Canvas.width), 3);
-    const logo = new ImageObject(Assets.images.activision, this.logoWidth, this.logoHeight);
+    const background = new Rectangle(Canvas.width, this.height, 'rgb(144, 144, 144)');
+    const line = new Line(new Vector2(Canvas.width), 5);
+    const logo = new ImageObject(Assets.images.activision, 0, 0, 7680, 1862, this.logoWidth, this.logoHeight);
 
-    this.scoreText = new Text('', '#f1b91c', 'bold 80px arial', 'top', 'right');
+    this.scoreText = new Text('', this.textColor, 'bold 80px arial', 'top', 'right');
     this.fuelIndicator = new FuelIndicator(this.fuelIndicatorWidth, this.fuelIndicatorHeight);
-    this.numberOfLivesText = new Text('', '#f1b91c', 'bold 80px arial', 'bottom', 'right');
+    this.numberOfLivesText = new Text('', this.textColor, 'bold 80px arial', 'bottom', 'right');
 
     logo.position.set(Canvas.width / 2 + this.fuelIndicatorWidth / 2 - this.logoWidth, this.height - this.logoHeight - 10);
     this.scoreText.position.set(Canvas.width / 2 + this.fuelIndicatorWidth / 2, 5);

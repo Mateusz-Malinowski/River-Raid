@@ -20,7 +20,7 @@ export default class FuelIndicator extends CanvasGroup {
   private halfLineWidth: number = 10;
   private handWidth: number = this.thresholdWidth;
   private handHeight: number;
-  private handColor: string = '#f2ba1d';
+  private handColor: string = 'rgb(252 252 104)';
 
   public constructor(width: number, height: number) {
     super();

@@ -14,6 +14,7 @@ const idGenerator = id();
 
 export default class CanvasGroup {
   private id: number = idGenerator.next().value;
+  public isFixed: boolean = false;
   public realPosition: Vector2 = new Vector2(0, 0);
   public type: CanvasType = CanvasType.Group;
   public position: Vector2 = new Vector2(0, 0);

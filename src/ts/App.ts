@@ -1,4 +1,5 @@
 import Assets from "./core/Assets";
+import Camera from "./core/Camera";
 import Canvas from "./core/Canvas";
 import Renderer from "./core/Renderer";
 import Scene from "./core/Scene";
@@ -6,6 +7,7 @@ import Game from "./Game";
 
 export default class App {
   private game: Game;
+  private gameCamera: Camera;
   private gameScene: Scene;
   private gameRenderer: Renderer;
   private canvasWidth: number = 2000;
@@ -19,7 +21,8 @@ export default class App {
     await Assets.loadImages();
     
     Canvas.create(this.canvasWidth, this.canvasHeight);
-    this.gameScene = new Scene();
+    this.gameCamera = new Camera();
+    this.gameScene = new Scene(this.gameCamera);
     this.game = new Game(this.gameScene);
     this.gameRenderer = new Renderer(this.gameScene, this.game.render);
     this.gameRenderer.startRendering();

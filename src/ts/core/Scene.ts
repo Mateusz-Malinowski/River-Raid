@@ -1,3 +1,4 @@
+import Camera from "./Camera";
 import Canvas from "./Canvas";
 import CanvasGroup from "./CanvasGroup";
 import CanvasObject from "./CanvasObject";
@@ -7,6 +8,11 @@ import Vector2 from "./Vector2";
 
 export default class Scene {
   private elements: CanvasElement[] = [];
+  public camera: Camera;
+
+  public constructor(camera: Camera) {
+    this.camera = camera;
+  }
 
   public add(object: CanvasObject | CanvasGroup): void {
     this.elements.push(object);
@@ -24,12 +30,16 @@ export default class Scene {
       if (element.type == CanvasType.Object) {
         const object = element as CanvasObject;
         object.realPosition.copy(object.position);
+        if (!object.isFixed)
+          object.realPosition.set(object.realPosition.x - this.camera.position.x, object.realPosition.y - this.camera.position.y);
         this.drawObject(object);
         continue;
       }
 
       const group = element as CanvasGroup;
       group.realPosition.copy(group.position);
+      if (!group.isFixed)
+        group.realPosition.set(group.realPosition.x - this.camera.position.x, group.realPosition.y - this.camera.position.y);
       this.drawGroup(group);
     }
   }

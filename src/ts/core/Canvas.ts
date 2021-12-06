@@ -20,6 +20,7 @@ export default class Canvas {
   }
 
   public static reset(): void {
+    this.ctx.imageSmoothingEnabled = false;
     this.ctx.lineWidth = 1;
     this.ctx.fillStyle = '#000';
     this.ctx.strokeStyle = '#000';
