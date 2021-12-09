@@ -14,11 +14,11 @@ export default class Scene {
     this.camera = camera;
   }
 
-  public add(object: CanvasObject | CanvasGroup): void {
+  public add(object: CanvasElement): void {
     this.elements.push(object);
   }
 
-  public remove(object: CanvasObject | CanvasGroup): void {
+  public remove(object: CanvasElement): void {
     const index = this.elements.indexOf(object);
     this.elements.splice(index, 1);
   }
