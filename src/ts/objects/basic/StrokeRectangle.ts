@@ -2,8 +2,6 @@ import Canvas from "../../core/Canvas";
 import CanvasObject from "../../core/CanvasObject";
 
 export default class StrokeRectangle extends CanvasObject {
-  public width: number;
-  public height: number;
   public strokeColor: string;
   public lineWidth: number;
 

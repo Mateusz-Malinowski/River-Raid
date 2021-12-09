@@ -17,5 +17,7 @@ export default abstract class CanvasObject {
   public realPosition: Vector2 = new Vector2(0, 0);
   public type: CanvasType = CanvasType.Object;
   public position: Vector2 = new Vector2(0, 0);
+  public width: number;
+  public height: number;
   public abstract draw(): void;
 }
