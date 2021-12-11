@@ -22,6 +22,7 @@ export default class Game {
   private playerExplosionWidth: number = 112;
   private playerExplosionHeight: number = 88;
   private reviveTimeMs: number = 2500;
+  private runwayMargin: number = 15;
 
   private currentLevel: CanvasGroup;
   private nextLevel: CanvasGroup;
@@ -65,8 +66,9 @@ export default class Game {
 
   private addMap(): void {
     this.currentLevel = MapGenerator.generateLevel();
-    this.nextLevel = MapGenerator.generateLevel();
+    this.currentLevel.position.set(0, MapGenerator.sectionHeight / 2 - this.playerDistance - this.runwayMargin);
     this.scene.add(this.currentLevel);
+    this.addNextLevel();
   }
 
   public render = (delta: number): void => {
@@ -129,5 +131,17 @@ export default class Game {
   private revivePlayer(): void {
     this.player = new Player();
     this.player.setPosition(new Vector2(Canvas.width / 2, this.currentLevel.position.y - this.playerDistance));
+  }
+
+  private progressLevel(): void {
+    this.scene.remove(this.currentLevel);
+    this.currentLevel = this.nextLevel;
+    this.addNextLevel();
+  }
+
+  private addNextLevel(): void {
+    this.nextLevel = MapGenerator.generateLevel();
+    this.nextLevel.position.set(0, this.currentLevel.position.y - MapGenerator.levelHeight);
+    this.scene.add(this.nextLevel);
   }
 }

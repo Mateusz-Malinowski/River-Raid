@@ -10,13 +10,12 @@ import { getRandomInt, objectsColliding } from "./utilities";
 
 export default class MapGenerator {
   public static levelHeight: number = 12000;
+  public static sectionHeight: number = 500; // levelHeight has to be divisible by sectionHeight
   
-  private static sectionHeight: number = 500;
   private static minimalRiverChangeWidth: number = 200;
   private static minimumGrassWidth: number = 100;
   private static riverChangeStepWidth: number = 50;
   private static riverChangeStepHeight: number = 10;
-  private static runwayOffset: number = 15;
   private static startingRiverWidth: number = 400;
   private static runwayHeight: number = 200;
   private static houseAndTreeWidth: number = 160;
@@ -44,9 +43,14 @@ export default class MapGenerator {
         this.addHousesToSection(group, numberOfHouses);
       }
 
-      const changeRiverWidth = getRandomInt(0, 2); // 50%
-      if (changeRiverWidth)
-        this.transitionRiverWidth(group);
+      if (i == this.levelHeight / this.sectionHeight - 1) { // last section
+        this.transitionRiverWidth(group, this.startingRiverWidth);
+      }
+      else {
+        const changeRiverWidth = getRandomInt(0, 2); // 50%
+        if (changeRiverWidth)
+          this.transitionRiverWidth(group);
+      }
     }
 
     this.addRunwayToLevel(group);
@@ -74,8 +78,10 @@ export default class MapGenerator {
 
     const leftRunway = new Runway(startingLeftBoundX, this.runwayHeight);
     const rightRunway = new Runway(Canvas.width - startingRightBoundX, this.runwayHeight);
-    leftRunway.position.set(0, 0 - leftRunway.height - this.runwayOffset);
-    rightRunway.position.set(startingRightBoundX, 0 - rightRunway.height - this.runwayOffset);
+
+    // position at the center of the first section
+    leftRunway.position.set(0, -(this.sectionHeight / 2) - this.runwayHeight / 2);
+    rightRunway.position.set(startingRightBoundX, -(this.sectionHeight / 2) - this.runwayHeight / 2);
 
     group.objects.push(leftRunway, rightRunway);
   }
@@ -138,12 +144,15 @@ export default class MapGenerator {
     group.objects.push(leftBoundLine, rightBoundLine);
   }
 
-  private static transitionRiverWidth(group: CanvasGroup): void {
+  private static transitionRiverWidth(group: CanvasGroup, newWidth?: number): void {
     const oldRiverWidth = this.riverWidth;
     const oldRightBoundX = this.rightBoundX;
     const oldLeftBoundX = this.leftBoundX;
 
-    const newRiverWidth = this.getRandomRiverWidth();
+    let newRiverWidth = newWidth;
+    if (!newRiverWidth)
+      newRiverWidth = this.getRandomRiverWidth();
+
     this.changeRiverWidth(newRiverWidth);
 
     const halfDifference = (newRiverWidth - oldRiverWidth) / 2;
