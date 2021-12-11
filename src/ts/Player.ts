@@ -33,6 +33,7 @@ export default class Player {
   private bulletsPerSecond: number = 3;
   private secondsFromPreviousBullet: number = 1 / this.bulletsPerSecond; // player can fire on start
 
+  public isDead: boolean = false;
   public bullets: PlayerBullet[] = [];
   public object: ImageObject = new Plane(this.basePlaneWidth, this.basePlaneHeight);
 

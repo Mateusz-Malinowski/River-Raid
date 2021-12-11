@@ -9,7 +9,8 @@ import CanvasObject from "./core/CanvasObject";
 import { getRandomInt, objectsColliding } from "./utilities";
 
 export default class MapGenerator {
-  private static levelHeight: number = 12000;
+  public static levelHeight: number = 12000;
+  
   private static sectionHeight: number = 500;
   private static minimalRiverChangeWidth: number = 200;
   private static minimumGrassWidth: number = 100;
@@ -26,17 +27,7 @@ export default class MapGenerator {
   private static rightBoundX: number;
   private static sectionPositionY: number;
 
-  public static generate(): CanvasGroup {
-    return this.generateLevel();
-  }
-
-  private static changeRiverWidth(riverWidth: number): void {
-    this.riverWidth = riverWidth;
-    this.leftBoundX = Canvas.width / 2 - this.riverWidth / 2;
-    this.rightBoundX = Canvas.width / 2 + this.riverWidth / 2;
-  }
-
-  private static generateLevel(): CanvasGroup {
+  public static generateLevel(): CanvasGroup {
     this.changeRiverWidth(this.startingRiverWidth);
 
     const group = new CanvasGroup();
@@ -61,6 +52,12 @@ export default class MapGenerator {
     this.addRunwayToLevel(group);
 
     return group;
+  }
+
+  private static changeRiverWidth(riverWidth: number): void {
+    this.riverWidth = riverWidth;
+    this.leftBoundX = Canvas.width / 2 - this.riverWidth / 2;
+    this.rightBoundX = Canvas.width / 2 + this.riverWidth / 2;
   }
 
   private static getRandomRiverWidth(): number {
