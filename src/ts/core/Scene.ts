@@ -20,7 +20,8 @@ export default class Scene {
 
   public remove(object: CanvasElement): void {
     const index = this.elements.indexOf(object);
-    this.elements.splice(index, 1);
+    if (index != -1)
+      this.elements.splice(index, 1);
   }
 
   public draw(): void {

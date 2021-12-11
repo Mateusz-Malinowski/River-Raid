@@ -15,6 +15,10 @@ export default class Keyboard {
     return this.pressedKeys.includes(key);
   }
 
+  public static getPressedKeys(): string[] {
+    return this.pressedKeys;
+  }
+
   private static onKeyDown = (event: KeyboardEvent): void => {
     if (!Keyboard.pressedKeys.includes(event.key))
       Keyboard.pressedKeys.push(event.key);

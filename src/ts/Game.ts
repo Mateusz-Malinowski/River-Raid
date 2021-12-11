@@ -60,9 +60,15 @@ export default class Game {
   }
 
   public render = (delta: number): void => {
+    for (const bullet of this.player.bullets) {
+      this.scene.remove(bullet);
+    }
     this.scene.remove(this.player.object);
     this.player.render(delta);
     this.scene.add(this.player.object);
+    for (const bullet of this.player.bullets) {
+      this.scene.add(bullet);
+    }
 
     // follow the player on y axis
     this.scene.camera.position.set(0, this.player.getPosition().y + this.cameraOffset);
