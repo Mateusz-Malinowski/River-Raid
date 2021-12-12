@@ -1,7 +1,6 @@
 import Canvas from "./core/Canvas";
 import Scene from "./core/Scene";
 import Vector2 from "./core/Vector2";
-import Enemy from "./Enemy";
 import GameInfo from "./groups/GameInfo";
 import Level from "./Level";
 import LevelGenerator from "./LevelGenerator";
@@ -16,6 +15,7 @@ import LevelFuel from "./LevelFuel";
 import Player from "./Player";
 import PlayerBullet from "./PlayerBullet";
 import { delay, objectsRealPositionColliding, removeElementFromArray } from "./utilities";
+import Enemy from "./objects/image-objects/enemies/Enemy";
 
 export default class Game {
   private scene: Scene;
@@ -43,6 +43,7 @@ export default class Game {
   private runwayMargin: number = 15;
 
   private previousLevel: Level = new Level();
+  private currentLevelAtStart: Level = new Level();
   private currentLevel: Level;
   private nextLevel: Level;
 
@@ -107,9 +108,10 @@ export default class Game {
 
   private addMap(): void {
     this.currentLevel = LevelGenerator.generate();
-
     // remove bridge from first level
     removeElementFromArray(this.currentLevel.objects, this.currentLevel.bridge);
+
+    this.currentLevelAtStart.copy(this.currentLevel);
 
     this.scene.add(this.currentLevel);
     this.addNextLevel();
@@ -241,8 +243,6 @@ export default class Game {
       }, this.playerExplosionDuration)
     }
     else {
-      this.numberOfLives--;
-      this.gameInfo.setNumberOfLives(this.numberOfLives);
       setTimeout(() => {
         this.scene.remove(playerExplosion);
         this.revivePlayer();
@@ -270,6 +270,7 @@ export default class Game {
 
   private async destroyCurrentBridge(): Promise<void> {
     removeElementFromArray(this.currentLevel.objects, this.currentLevel.bridge);
+    removeElementFromArray(this.currentLevelAtStart.objects, this.currentLevel.bridge);
     this.score += this.currentLevel.bridge.pointsForDestruction;
     this.gameInfo.setScore(this.score);
 
@@ -326,9 +327,12 @@ export default class Game {
   }
 
   private revivePlayer(): void {
+    this.numberOfLives--;
+    this.gameInfo.setNumberOfLives(this.numberOfLives);
     this.player = new Player();
     this.fuel = 1;
     this.gameInfo.fuelIndicator.setHand(this.fuel);
+    this.currentLevel.copy(this.currentLevelAtStart);
     this.movePlayerToLevelStart();
   }
 
@@ -336,6 +340,7 @@ export default class Game {
     this.scene.remove(this.previousLevel);
     this.previousLevel = this.currentLevel;
     this.currentLevel = this.nextLevel;
+    this.currentLevelAtStart.copy(this.currentLevel);
     this.addNextLevel();
   }
 

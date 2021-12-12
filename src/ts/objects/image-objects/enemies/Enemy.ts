@@ -1,4 +1,4 @@
-import ImageObject from "./objects/ImageObject";
+import ImageObject from "../../ImageObject";
 
 export default class Enemy extends ImageObject {
   

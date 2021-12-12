@@ -34,7 +34,7 @@ export default class GameInfo extends CanvasGroup {
   }
 
   public setNumberOfLives(numberOfLives: number): void {
-    this.numberOfLivesText.content = numberOfLives.toString();
+    this.numberOfLivesText.content = numberOfLives != 0 ? numberOfLives.toString() : '';
   }
 
   private addElements(): void {
