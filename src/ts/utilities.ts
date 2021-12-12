@@ -1,5 +1,6 @@
 import CanvasObject from "./core/CanvasObject";
 import Vector2 from "./core/Vector2";
+import Player from "./Player";
 
 /**
  * 
@@ -13,12 +14,24 @@ export function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-export function objectsColliding(object1: CanvasObject, object2: CanvasObject): boolean {
+export function objectsPositionColliding(object1: CanvasObject, object2: CanvasObject): boolean {
   if (
     object1.position.x < object2.position.x + object2.width &&
     object1.position.x + object1.width > object2.position.x &&
     object1.position.y < object2.position.y + object2.height &&
     object1.height + object1.position.y > object2.position.y
+  )
+    return true;
+
+  return false;
+}
+
+export function objectsRealPositionColliding(object1: CanvasObject, object2: CanvasObject): boolean {
+  if (
+    object1.realPosition.x < object2.realPosition.x + object2.width &&
+    object1.realPosition.x + object1.width > object2.realPosition.x &&
+    object1.realPosition.y < object2.realPosition.y + object2.height &&
+    object1.height + object1.realPosition.y > object2.realPosition.y
   )
     return true;
 

@@ -7,9 +7,10 @@ import MapGenerator from "./MapGenerator";
 import Line from "./objects/basic/Line";
 import Rectangle from "./objects/basic/Rectangle";
 import PlayerExplosion from "./objects/image-objects/explosions/PlayerExplosion";
+import Bridge from "./objects/image-objects/map/Bridge";
 import Runway from "./objects/image-objects/map/Runway";
 import Player from "./Player";
-import { objectsColliding } from "./utilities";
+import { objectsRealPositionColliding } from "./utilities";
 
 export default class Game {
   private scene: Scene;
@@ -25,6 +26,7 @@ export default class Game {
   private runwayMargin: number = 15;
 
   private currentLevel: CanvasGroup;
+  private nextLevelBridge: Bridge;
   private nextLevel: CanvasGroup;
 
   private score: number = 80;
@@ -37,9 +39,23 @@ export default class Game {
 
   private init(): void {
     this.addBackground();
-    this.addPlayer();
     this.addMap();
+    this.addPlayer();
     this.addGameInfo();
+  }
+
+  public beforeDrawing = (delta: number): void => {
+    if (!this.player.isDead) {
+      this.updatePlayerAndBullets(delta);
+    }
+
+    this.moveCameraToPlayer();
+  }
+
+  public afterDrawing = (delta: number): void => {
+    if (!this.player.isDead && !this.player.isStopped) {
+      this.handleCollisions();
+    }
   }
 
   private addBackground(): void {
@@ -60,24 +76,20 @@ export default class Game {
 
   private addPlayer(): void {
     this.player = new Player();
-    this.player.setPosition(new Vector2(Canvas.width / 2, -this.playerDistance));
+    this.movePlayerToLevelStart();
     this.scene.add(this.player.object);
   }
 
   private addMap(): void {
-    this.currentLevel = MapGenerator.generateLevel();
-    this.currentLevel.position.set(0, MapGenerator.sectionHeight / 2 - this.playerDistance - this.runwayMargin);
+    const level = MapGenerator.generateLevel();
+    const bridge = level[1]
+    this.currentLevel = level[0];
+
+    // remove bridge from first level
+    const index = this.currentLevel.objects.indexOf(bridge);
+    this.currentLevel.objects.splice(index, 1);
     this.scene.add(this.currentLevel);
     this.addNextLevel();
-  }
-
-  public render = (delta: number): void => {
-    if (!this.player.isDead) {
-      this.updatePlayerAndBullets(delta);
-      this.handleCollisions();
-    }
-
-    this.moveCameraToPlayer();
   }
 
   private updatePlayerAndBullets(delta: number): void {
@@ -98,20 +110,33 @@ export default class Game {
 
   private handlePlayerCollision(): void {
     for (const object of this.currentLevel.objects) {
-      if (objectsColliding(object, this.player.object)) {
+      if (objectsRealPositionColliding(object, this.player.object)) {
         const playerExplosion = new PlayerExplosion(this.playerExplosionWidth, this.playerExplosionHeight);
         playerExplosion.position.set(
           this.player.getPosition().x - this.playerExplosionWidth / 2,
           this.player.getPosition().y - this.playerExplosionHeight / 2
         )
         this.scene.add(playerExplosion);
+
         this.destroyPlayer();
-        setTimeout(() => {
-          this.scene.remove(playerExplosion);
-          this.revivePlayer();
-        }, this.reviveTimeMs);
+        if (this.numberOfLives == 0) {
+          // game over
+        }
+        else {
+          this.numberOfLives--;
+          this.gameInfo.setNumberOfLives(this.numberOfLives);
+          setTimeout(() => {
+            this.scene.remove(playerExplosion);
+            this.revivePlayer();
+          }, this.reviveTimeMs);
+        }
+
         break;
       }
+    }
+
+    if (objectsRealPositionColliding(this.nextLevelBridge, this.player.object)) {
+      this.progressLevel();
     }
   }
 
@@ -130,7 +155,7 @@ export default class Game {
 
   private revivePlayer(): void {
     this.player = new Player();
-    this.player.setPosition(new Vector2(Canvas.width / 2, this.currentLevel.position.y - this.playerDistance));
+    this.movePlayerToLevelStart();
   }
 
   private progressLevel(): void {
@@ -140,8 +165,15 @@ export default class Game {
   }
 
   private addNextLevel(): void {
-    this.nextLevel = MapGenerator.generateLevel();
+    const level = MapGenerator.generateLevel();
+    this.nextLevel = level[0];
+    this.nextLevelBridge = level[1];
     this.nextLevel.position.set(0, this.currentLevel.position.y - MapGenerator.levelHeight);
     this.scene.add(this.nextLevel);
+  }
+
+  private movePlayerToLevelStart(): void {
+    const pos = new Vector2(Canvas.width / 2, this.currentLevel.position.y - MapGenerator.sectionHeight / 2 + this.runwayMargin);
+    this.player.setPosition(pos);
   }
 }

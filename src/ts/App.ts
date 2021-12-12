@@ -26,7 +26,7 @@ export default class App {
     this.gameCamera = new Camera();
     this.gameScene = new Scene(this.gameCamera);
     this.game = new Game(this.gameScene);
-    this.gameRenderer = new Renderer(this.gameScene, this.game.render);
+    this.gameRenderer = new Renderer(this.gameScene, this.game.beforeDrawing, this.game.afterDrawing);
     this.gameRenderer.startRendering();
   }
 }

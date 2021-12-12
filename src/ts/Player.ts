@@ -14,7 +14,6 @@ enum DirectionX {
 
 export default class Player {
   private position: Vector2 = new Vector2();
-  private isStopped: boolean = true;
   private velocityX: number = 0;
   private maxVelocityX: number = 0.8;
   private directionX: DirectionX;
@@ -33,6 +32,7 @@ export default class Player {
   private bulletsPerSecond: number = 3;
   private secondsFromPreviousBullet: number = 1 / this.bulletsPerSecond; // player can fire on start
 
+  public isStopped: boolean = true;
   public isDead: boolean = false;
   public bullets: PlayerBullet[] = [];
   public object: ImageObject = new Plane(this.basePlaneWidth, this.basePlaneHeight);
@@ -62,14 +62,15 @@ export default class Player {
       else
         return;
     }
-    
+
     this.handleControls(delta);
     this.updatePosition(delta);
     this.updateBullets(delta);
+
   }
 
   private alignObjectPosition(): void {
-    this.object.position.set(this.position.x - this.object.width / 2, this.position.y - this.object.height / 2)
+    this.object.position.set(this.position.x - this.object.width / 2, this.position.y - this.object.height / 2);
   }
 
   private handleControls(delta: number): void {

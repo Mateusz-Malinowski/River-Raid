@@ -6,12 +6,13 @@ import Runway from "./objects/image-objects/map/Runway";
 import Grass from "./objects/image-objects/map/Grass";
 import HouseAndTree from "./objects/image-objects/map/HouseAndTree";
 import CanvasObject from "./core/CanvasObject";
-import { getRandomInt, objectsColliding } from "./utilities";
+import { getRandomInt, objectsPositionColliding } from "./utilities";
+import Bridge from "./objects/image-objects/map/Bridge";
 
 export default class MapGenerator {
   public static levelHeight: number = 12000;
   public static sectionHeight: number = 500; // levelHeight has to be divisible by sectionHeight
-  
+
   private static minimalRiverChangeWidth: number = 200;
   private static minimumGrassWidth: number = 100;
   private static riverChangeStepWidth: number = 50;
@@ -20,16 +21,23 @@ export default class MapGenerator {
   private static runwayHeight: number = 200;
   private static houseAndTreeWidth: number = 160;
   private static houseAndTreeHeight: number = 95;
+  private static bridgeWidth: number = MapGenerator.startingRiverWidth;
+  private static bridgeHeight: number = MapGenerator.runwayHeight;
 
   private static riverWidth: number;
   private static leftBoundX: number;
   private static rightBoundX: number;
   private static sectionPositionY: number;
 
-  public static generateLevel(): CanvasGroup {
+  /**
+   * 
+   * @returns group of level objects and bridge object
+   */
+  public static generateLevel(): [CanvasGroup, Bridge] {
     this.changeRiverWidth(this.startingRiverWidth);
 
     const group = new CanvasGroup();
+    const bridge = new Bridge(this.bridgeWidth, this.bridgeHeight);
 
     for (let i = 0; i < this.levelHeight / this.sectionHeight; i++) {
       this.sectionPositionY = -this.sectionHeight * (i + 1);
@@ -53,9 +61,9 @@ export default class MapGenerator {
       }
     }
 
-    this.addRunwayToLevel(group);
+    this.addRunwayAndBridgeToLevel(group, bridge);
 
-    return group;
+    return [group, bridge];
   }
 
   private static changeRiverWidth(riverWidth: number): void {
@@ -72,7 +80,7 @@ export default class MapGenerator {
     return newRiverWidth;
   }
 
-  private static addRunwayToLevel(group: CanvasGroup): void {
+  private static addRunwayAndBridgeToLevel(group: CanvasGroup, bridge: Bridge): void {
     const startingLeftBoundX = Canvas.width / 2 - this.startingRiverWidth / 2;
     const startingRightBoundX = Canvas.width / 2 + this.startingRiverWidth / 2;
 
@@ -82,8 +90,9 @@ export default class MapGenerator {
     // position at the center of the first section
     leftRunway.position.set(0, -(this.sectionHeight / 2) - this.runwayHeight / 2);
     rightRunway.position.set(startingRightBoundX, -(this.sectionHeight / 2) - this.runwayHeight / 2);
+    bridge.position.set(this.leftBoundX, leftRunway.position.y);
 
-    group.objects.push(leftRunway, rightRunway);
+    group.objects.push(leftRunway, rightRunway, bridge);
   }
 
   private static addGrassToSection(group: CanvasGroup): void {
@@ -123,7 +132,7 @@ export default class MapGenerator {
         houseAndTree.position.set(positionX, positionY);
         
         for (const house of houses) {
-          if (objectsColliding(houseAndTree, house)) {
+          if (objectsPositionColliding(houseAndTree, house)) {
             isColliding = true;
             break;
           }
