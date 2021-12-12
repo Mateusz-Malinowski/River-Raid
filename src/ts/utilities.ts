@@ -14,6 +14,11 @@ export function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
+export function removeElementFromArray<T>(array: Array<T>, element: T): void {
+  const index = array.indexOf(element);
+  array.splice(index, 1);
+}
+
 export function objectsPositionColliding(object1: CanvasObject, object2: CanvasObject): boolean {
   if (
     object1.position.x < object2.position.x + object2.width &&
@@ -36,4 +41,12 @@ export function objectsRealPositionColliding(object1: CanvasObject, object2: Can
     return true;
 
   return false;
+}
+
+export function delay(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
 }

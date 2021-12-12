@@ -27,6 +27,10 @@ export default class Scene {
   public draw(): void {
     Canvas.clear();
 
+    this.elements.sort((a: CanvasElement, b: CanvasElement) => {
+      return a.zIndex - b.zIndex;
+    });
+
     for (const element of this.elements) {
       if (element.type == CanvasType.Object) {
         const object = element as CanvasObject;

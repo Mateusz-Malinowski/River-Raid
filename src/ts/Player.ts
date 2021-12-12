@@ -21,14 +21,14 @@ export default class Player {
   private minVelocityY: number = 0.2;
   private baseVelocityY: number = 0.4;
   private maxVelocityY: number = 0.8;
-  private accelerationRateY: number = 0.001;
+  private accelerationRateY: number = 0.0007;
   private accelerationRateX: number = 0.002;
-  private basePlaneWidth: number = 105;
-  private basePlaneHeight: number = 105;
-  private rolledPlaneWidth: number = 75;
-  private rolledPlaneHeight: number = 105;
-  private bulletWidth: number = 14;
-  private bulletHeight: number = 56;
+  private basePlaneWidth: number = 80;
+  private basePlaneHeight: number = 80;
+  private rolledPlaneWidth: number = 60;
+  private rolledPlaneHeight: number = 80;
+  private bulletWidth: number = 12;
+  private bulletHeight: number = 48;
   private bulletsPerSecond: number = 3;
   private secondsFromPreviousBullet: number = 1 / this.bulletsPerSecond; // player can fire on start
 

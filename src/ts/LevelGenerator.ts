@@ -8,9 +8,13 @@ import HouseAndTree from "./objects/image-objects/map/HouseAndTree";
 import CanvasObject from "./core/CanvasObject";
 import { getRandomInt, objectsPositionColliding } from "./utilities";
 import Bridge from "./objects/image-objects/map/Bridge";
+import LevelBridge from "./LevelBridge";
+import Fuel from "./objects/image-objects/map/Fuel";
+import Level from "./Level";
+import LevelFuel from "./LevelFuel";
 
-export default class MapGenerator {
-  public static levelHeight: number = 12000;
+export default class LevelGenerator {
+  public static levelHeight: number = 8000;
   public static sectionHeight: number = 500; // levelHeight has to be divisible by sectionHeight
 
   private static minimalRiverChangeWidth: number = 200;
@@ -21,49 +25,50 @@ export default class MapGenerator {
   private static runwayHeight: number = 200;
   private static houseAndTreeWidth: number = 160;
   private static houseAndTreeHeight: number = 95;
-  private static bridgeWidth: number = MapGenerator.startingRiverWidth;
-  private static bridgeHeight: number = MapGenerator.runwayHeight;
+  private static bridgeWidth: number = LevelGenerator.startingRiverWidth;
+  private static bridgeHeight: number = LevelGenerator.runwayHeight;
+  private static fuelWidth: number = 80;
+  private static fuelHeight: number = 144;
 
   private static riverWidth: number;
   private static leftBoundX: number;
   private static rightBoundX: number;
   private static sectionPositionY: number;
 
-  /**
-   * 
-   * @returns group of level objects and bridge object
-   */
-  public static generateLevel(): [CanvasGroup, Bridge] {
+  public static generate(): Level {
     this.changeRiverWidth(this.startingRiverWidth);
 
-    const group = new CanvasGroup();
-    const bridge = new Bridge(this.bridgeWidth, this.bridgeHeight);
+    const level = new Level();
 
     for (let i = 0; i < this.levelHeight / this.sectionHeight; i++) {
       this.sectionPositionY = -this.sectionHeight * (i + 1);
 
-      this.addGrassToSection(group);
+      level.staticObjects.push(...this.addGrassToSection(level));
 
       const enoughPlaceForHouses = (Canvas.width - this.riverWidth) / 2 > this.houseAndTreeWidth;
       const generateHouses = getRandomInt(0, 5) == 0 ? true : false; // 25 %
       if (i != 0 && enoughPlaceForHouses && generateHouses) {
         const numberOfHouses = getRandomInt(1, 4); // 1 - 3 houses
-        this.addHousesToSection(group, numberOfHouses);
+        level.staticObjects.push(...this.addHousesToSection(level, numberOfHouses));
       }
 
       if (i == this.levelHeight / this.sectionHeight - 1) { // last section
-        this.transitionRiverWidth(group, this.startingRiverWidth);
+        level.staticObjects.push(...this.transitionRiverWidth(level, this.startingRiverWidth));
       }
       else {
         const changeRiverWidth = getRandomInt(0, 2); // 50%
         if (changeRiverWidth)
-          this.transitionRiverWidth(group);
+          level.staticObjects.push(...this.transitionRiverWidth(level));
       }
     }
 
-    this.addRunwayAndBridgeToLevel(group, bridge);
+    level.staticObjects.push(...this.addRunwayToLevel(level));
+    level.bridge = this.addBridgeToLevel(level);
 
-    return [group, bridge];
+    const numberOfFuelBarrels = getRandomInt(5, 16);
+    level.fuelBarrels.push(...this.addFuelBarrelsToLevel(level, numberOfFuelBarrels));
+
+    return level;
   }
 
   private static changeRiverWidth(riverWidth: number): void {
@@ -80,7 +85,7 @@ export default class MapGenerator {
     return newRiverWidth;
   }
 
-  private static addRunwayAndBridgeToLevel(group: CanvasGroup, bridge: Bridge): void {
+  private static addRunwayToLevel(group: CanvasGroup): Runway[] {
     const startingLeftBoundX = Canvas.width / 2 - this.startingRiverWidth / 2;
     const startingRightBoundX = Canvas.width / 2 + this.startingRiverWidth / 2;
 
@@ -90,21 +95,33 @@ export default class MapGenerator {
     // position at the center of the first section
     leftRunway.position.set(0, -(this.sectionHeight / 2) - this.runwayHeight / 2);
     rightRunway.position.set(startingRightBoundX, -(this.sectionHeight / 2) - this.runwayHeight / 2);
-    bridge.position.set(this.leftBoundX, leftRunway.position.y);
 
-    group.objects.push(leftRunway, rightRunway, bridge);
+    group.objects.push(leftRunway, rightRunway);
+
+    return [leftRunway, rightRunway];
   }
 
-  private static addGrassToSection(group: CanvasGroup): void {
+  private static addBridgeToLevel(group: CanvasGroup): LevelBridge {
+    const bridge = new LevelBridge(this.bridgeWidth, this.bridgeHeight);
+    bridge.position.set(this.leftBoundX, -(this.sectionHeight / 2) - this.runwayHeight / 2);
+
+    group.objects.push(bridge);
+
+    return bridge;
+  }
+
+  private static addGrassToSection(group: CanvasGroup): Grass[] {
     const leftGrass = new Grass(this.leftBoundX, this.sectionHeight);
     const rightGrass = new Grass(Canvas.width - this.rightBoundX, this.sectionHeight);
     leftGrass.position.set(0, this.sectionPositionY);
     rightGrass.position.set(this.rightBoundX, this.sectionPositionY);
 
     group.objects.push(leftGrass, rightGrass);
+
+    return [leftGrass, rightGrass];
   }
 
-  private static addHousesToSection(group: CanvasGroup, count: number): void {
+  private static addHousesToSection(group: CanvasGroup, count: number): HouseAndTree[] {
     const houses: HouseAndTree[] = [];
 
     for (let i = 0; i < count; i++) {
@@ -130,18 +147,61 @@ export default class MapGenerator {
         positionX = getRandomInt(minPositionX, maxPositionX);
         positionY = getRandomInt(minPositionY, maxPositionY);
         houseAndTree.position.set(positionX, positionY);
-        
+
         for (const house of houses) {
           if (objectsPositionColliding(houseAndTree, house)) {
             isColliding = true;
             break;
           }
         }
-      } while(isColliding);
+      } while (isColliding);
 
       houses.push(houseAndTree);
     }
     group.objects.push(...houses);
+    return houses;
+  }
+
+  private static addFuelBarrelsToLevel(group: CanvasGroup, count: number): LevelFuel[] {
+    const fuelBarrels: LevelFuel[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const fuelBarrel = new LevelFuel(this.fuelWidth, this.fuelHeight);
+
+      const minPositionX = this.minimumGrassWidth;
+      const maxPositionX = Canvas.width - fuelBarrel.width - this.minimumGrassWidth;
+      const minPositionY = -this.levelHeight;
+      const maxPositionY = 0 - fuelBarrel.height - this.sectionHeight;
+
+      let isColliding, positionX, positionY;
+
+      do {
+        isColliding = false;
+        positionX = getRandomInt(minPositionX, maxPositionX + 1);
+        positionY = getRandomInt(minPositionY, maxPositionY + 1);
+        fuelBarrel.position.set(positionX, positionY);
+
+        for (const existingBarrel of fuelBarrels) {
+          if (objectsPositionColliding(existingBarrel, fuelBarrel)) {
+            isColliding = true;
+            break;
+          }
+        }
+
+        for (const object of group.objects) {
+          if (objectsPositionColliding(object, fuelBarrel)) {
+            isColliding = true;
+            break;
+          }
+        }
+      } while (isColliding);
+
+      fuelBarrels.push(fuelBarrel);
+    }
+
+    group.objects.push(...fuelBarrels);
+
+    return fuelBarrels;
   }
 
   private static addBoundsToSection(group: CanvasGroup): void {
@@ -153,7 +213,9 @@ export default class MapGenerator {
     group.objects.push(leftBoundLine, rightBoundLine);
   }
 
-  private static transitionRiverWidth(group: CanvasGroup, newWidth?: number): void {
+  private static transitionRiverWidth(group: CanvasGroup, newWidth?: number): Grass[] {
+    const stepGrasses: Grass[] = [];
+
     const oldRiverWidth = this.riverWidth;
     const oldRightBoundX = this.rightBoundX;
     const oldLeftBoundX = this.leftBoundX;
@@ -184,7 +246,11 @@ export default class MapGenerator {
         rightStepGrass.position.set(this.rightBoundX + i * this.riverChangeStepWidth, stepGrassPosY);
       }
 
-      group.objects.push(leftStepGrass, rightStepGrass);
+      stepGrasses.push(leftStepGrass, rightStepGrass);
     }
+
+    group.objects.push(...stepGrasses);
+
+    return stepGrasses;
   }
 }
