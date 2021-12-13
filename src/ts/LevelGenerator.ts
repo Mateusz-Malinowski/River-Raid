@@ -1,19 +1,16 @@
 import Canvas from "./core/Canvas";
-import CanvasGroup from "./core/CanvasGroup";
 import Vector2 from "./core/Vector2";
 import Line from "./objects/basic/Line";
 import Runway from "./objects/image-objects/map/Runway";
 import Grass from "./objects/image-objects/map/Grass";
 import HouseAndTree from "./objects/image-objects/map/HouseAndTree";
-import CanvasObject from "./core/CanvasObject";
 import { getRandomInt, objectsPositionColliding, objectsYAxisColliding } from "./utilities";
-import Bridge from "./objects/image-objects/map/Bridge";
 import LevelBridge from "./LevelBridge";
-import Fuel from "./objects/image-objects/map/Fuel";
 import Level from "./Level";
 import LevelFuel from "./LevelFuel";
 import Ship from "./enemies/Ship";
 import Chopper from "./enemies/Chopper";
+import { Enemy } from "./enemies/Enemy";
 
 export default class LevelGenerator {
   public static levelHeight: number = 8000;
@@ -211,8 +208,8 @@ export default class LevelGenerator {
     level.fuelBarrels.push(...fuelBarrels);
   }
 
-  private static addShipsAndChoppersToLevel(level: Level, count: number): Ship[] {
-    const shipsAndChoppers: Ship[] = [];
+  private static addShipsAndChoppersToLevel(level: Level, count: number): void {
+    const shipsAndChoppers: Enemy[] = [];
 
     for (let i = 0; i < count; i++) {
       const isShip = getRandomInt(0, 2) == 0 ? false : true;
@@ -254,8 +251,6 @@ export default class LevelGenerator {
 
     level.objects.push(...shipsAndChoppers);
     level.enemyObjects.push(...shipsAndChoppers);
-
-    return shipsAndChoppers;
   }
 
   private static addBoundsToSection(level: Level): void {
