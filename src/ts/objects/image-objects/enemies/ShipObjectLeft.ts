@@ -1,7 +1,7 @@
 import Assets from "../../../core/Assets";
-import Enemy from "./Enemy";
+import ImageObject from "../../ImageObject";
 
-export default class Ship extends Enemy {
+export default class ShipObjectLeft extends ImageObject {
   public constructor(width: number, height: number) {
     super(Assets.images.sprite, 4, 58, 32, 8, width, height);
   }

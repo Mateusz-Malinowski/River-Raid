@@ -14,8 +14,10 @@ import YellowExplosion from "./objects/image-objects/explosions/YellowExplosion"
 import LevelFuel from "./LevelFuel";
 import Player from "./Player";
 import PlayerBullet from "./PlayerBullet";
-import { delay, objectsRealPositionColliding, removeElementFromArray } from "./utilities";
-import Enemy from "./objects/image-objects/enemies/Enemy";
+import { delay, objectsRealPositionColliding, objectsRealPositionYDifference, removeElementFromArray } from "./utilities";
+import { EnemyType } from "./enemies/EnemyType";
+import CanvasObject from "./core/CanvasObject";
+import { Enemy } from "./enemies/Enemy";
 
 export default class Game {
   private scene: Scene;
@@ -81,6 +83,8 @@ export default class Game {
     if (!this.player.isDead && !this.player.isStopped) {
       this.handleCollisions(delta);
     }
+
+    this.updateEnemies(delta);
   }
 
   private addBackground(): void {
@@ -129,6 +133,20 @@ export default class Game {
     }
   }
 
+  private updateEnemies(delta: number): void {
+    for (const enemy of this.currentLevel.enemyObjects) {
+      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= 200) {
+        enemy.startMoving();
+      }
+      enemy.render(this.currentLevel, delta);
+    }
+    for (const enemy of this.previousLevel.enemyObjects) {
+      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= 200)
+        enemy.startMoving();
+      enemy.render(this.previousLevel, delta);
+    }
+  }
+
   private handleCollisions(delta: number): void {
     this.handlePlayerCollision(delta);
     this.handleBulletsCollision();
@@ -162,6 +180,22 @@ export default class Game {
         this.fuel += this.refuelRate * delta;
         if (this.fuel > 1) this.fuel = 1;
         this.gameInfo.fuelIndicator.setHand(this.fuel);
+      }
+    }
+
+    for (const enemyObject of this.currentLevel.enemyObjects) {
+      if (objectsRealPositionColliding(enemyObject, this.player.object)) {
+        this.destroyEnemy(this.currentLevel, enemyObject);
+        this.destroyPlayer();
+        break;
+      }
+    }
+
+    for (const enemyObject of this.previousLevel.enemyObjects) {
+      if (objectsRealPositionColliding(enemyObject, this.player.object)) {
+        this.destroyEnemy(this.previousLevel, enemyObject);
+        this.destroyPlayer();
+        break;
       }
     }
 
@@ -202,6 +236,24 @@ export default class Game {
         if (objectsRealPositionColliding(fuelBarrel, bullet)) {
           this.destroyBullet(bullet);
           this.destroyFuelBarrel(this.previousLevel, fuelBarrel);
+        }
+      }
+    }
+
+    for (const enemyObject of this.currentLevel.enemyObjects) {
+      for (const bullet of this.player.bullets) {
+        if (objectsRealPositionColliding(enemyObject, bullet)) {
+          this.destroyBullet(bullet);
+          this.destroyEnemy(this.currentLevel, enemyObject);
+        }
+      }
+    }
+
+    for (const enemyObject of this.previousLevel.enemyObjects) {
+      for (const bullet of this.player.bullets) {
+        if (objectsRealPositionColliding(enemyObject, bullet)) {
+          this.destroyBullet(bullet);
+          this.destroyEnemy(this.previousLevel, enemyObject);
         }
       }
     }
@@ -250,8 +302,26 @@ export default class Game {
     }
   }
 
-  private destroyEnemy(enemy: Enemy): void {
+  private destroyEnemy(level: Level, enemyObject: Enemy): void {
+    removeElementFromArray(level.objects, enemyObject);
+    removeElementFromArray(level.enemyObjects, enemyObject);
+    this.scene.remove(enemyObject);
 
+    this.score += enemyObject.pointsForDestruction;
+    this.gameInfo.setScore(this.score);
+
+    const explosionPosition = new Vector2(
+      enemyObject.position.x + enemyObject.width / 2,
+      enemyObject.position.y + enemyObject.height / 2
+    )
+
+    switch(enemyObject.enemyType) {
+      case EnemyType.Ship:
+        this.bigExplosionAnimation(level, explosionPosition);
+        break;
+      default:
+        this.smallExplosionAnimation(level, explosionPosition);
+    }
   }
 
   private destroyFuelBarrel(level: Level, barrel: LevelFuel): void {
@@ -291,8 +361,7 @@ export default class Game {
   }
 
   private destroyBullet(bullet: PlayerBullet): void {
-    const index = this.player.bullets.indexOf(bullet);
-    this.player.bullets.splice(index, 1);
+    removeElementFromArray(this.player.bullets, bullet);
     this.scene.remove(bullet);
   }
 

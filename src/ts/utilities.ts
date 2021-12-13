@@ -31,6 +31,16 @@ export function objectsPositionColliding(object1: CanvasObject, object2: CanvasO
   return false;
 }
 
+export function objectsYAxisColliding(object1: CanvasObject, object2: CanvasObject): boolean {
+  if (
+    object1.position.y < object2.position.y + object2.height &&
+    object1.height + object1.position.y > object2.position.y
+  )
+    return true;
+    
+  return false;
+}
+
 export function objectsRealPositionColliding(object1: CanvasObject, object2: CanvasObject): boolean {
   if (
     object1.realPosition.x < object2.realPosition.x + object2.width &&
@@ -41,6 +51,10 @@ export function objectsRealPositionColliding(object1: CanvasObject, object2: Can
     return true;
 
   return false;
+}
+
+export function objectsRealPositionYDifference(object1: CanvasObject, object2: CanvasObject): number {
+  return Math.abs(object1.realPosition.y - object2.realPosition.y);
 }
 
 export function delay(ms: number): Promise<void> {
