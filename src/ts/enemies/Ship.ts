@@ -52,4 +52,9 @@ export default class Ship extends ShipObjectRight {
 
     this.isMoving = true;
   }
+
+  public stopMoving(): void {
+    this.velocityX = 0;
+    this.isMoving = false;
+  }
 }

@@ -42,6 +42,7 @@ export default class Scene {
       }
 
       const group = element as CanvasGroup;
+      this.sortGroup(group);
       group.realPosition.copy(group.position);
       if (!group.isFixed)
         group.realPosition.set(group.realPosition.x - this.camera.position.x, group.realPosition.y - this.camera.position.y);
@@ -70,5 +71,14 @@ export default class Scene {
     for (const innerGroup of group.groups) {
       innerGroup.realPosition.set(group.realPosition.x + innerGroup.position.x, group.realPosition.y + innerGroup.position.y);
     }
+  }
+
+  private sortGroup(group: CanvasGroup): void {
+    group.objects.sort((a: CanvasObject, b: CanvasObject) => {
+      return a.zIndex - b.zIndex;
+    });
+
+    for (const innerGroup of group.groups)
+      this.sortGroup(innerGroup);
   }
 }

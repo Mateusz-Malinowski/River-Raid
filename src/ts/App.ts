@@ -5,6 +5,7 @@ import Keyboard from "./core/Keyboard";
 import Renderer from "./core/Renderer";
 import Scene from "./core/Scene";
 import Game from "./Game";
+import LevelGenerator from "./LevelGenerator";
 
 export default class App {
   private game: Game;
@@ -23,6 +24,7 @@ export default class App {
     Keyboard.create();
     
     Canvas.create(this.canvasWidth, this.canvasHeight);
+    LevelGenerator.init();
     this.gameCamera = new Camera();
     this.gameScene = new Scene(this.gameCamera);
     this.game = new Game(this.gameScene);

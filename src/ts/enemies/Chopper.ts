@@ -87,4 +87,9 @@ export default class Chopper extends Chopper1Right {
 
       this.isMoving = true;
   }
+
+  public stopMoving(): void {
+    this.velocityX = 0;
+    this.isMoving = false;
+  }
 }

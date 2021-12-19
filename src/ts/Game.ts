@@ -315,7 +315,7 @@ export default class Game {
       enemyObject.position.y + enemyObject.height / 2
     )
 
-    switch(enemyObject.enemyType) {
+    switch (enemyObject.enemyType) {
       case EnemyType.Ship:
         this.bigExplosionAnimation(level, explosionPosition);
         break;

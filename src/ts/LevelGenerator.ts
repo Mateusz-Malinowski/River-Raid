@@ -11,20 +11,25 @@ import LevelFuel from "./LevelFuel";
 import Ship from "./enemies/Ship";
 import Chopper from "./enemies/Chopper";
 import { Enemy } from "./enemies/Enemy";
+import Rectangle from "./objects/basic/Rectangle";
 
 export default class LevelGenerator {
   public static levelHeight: number = 8000;
   public static sectionHeight: number = 500; // levelHeight has to be divisible by sectionHeight
 
+  private static riverBorderColor: string = '#280302';
+  private static riverBorderWidth: number = 50;
   private static minimalRiverChangeWidth: number = 200;
   private static minimumGrassWidth: number = 100;
   private static riverChangeStepWidth: number = 50;
   private static riverChangeStepHeight: number = 10;
+  private static riverMaxAmplitude: number = 100;
+  private static riverMaxSingleAmplitude: number = 20;
   private static startingRiverWidth: number = 400;
   private static runwayHeight: number = 200;
   private static houseAndTreeWidth: number = 160;
   private static houseAndTreeHeight: number = 95;
-  private static bridgeWidth: number = LevelGenerator.startingRiverWidth;
+  private static bridgeWidth: number = LevelGenerator.startingRiverWidth + LevelGenerator.riverBorderWidth;
   private static bridgeHeight: number = LevelGenerator.runwayHeight;
   private static fuelWidth: number = 80;
   private static fuelHeight: number = 144;
@@ -36,7 +41,16 @@ export default class LevelGenerator {
   private static riverWidth: number;
   private static leftBoundX: number;
   private static rightBoundX: number;
+  private static currentLeftBoundX: number;
+  private static currentRightBoundX: number;
   private static sectionPositionY: number;
+  private static amplitude: number = 0;
+  private static amplitudeDirection: string = 'right';
+
+  public static init(): void {
+    this.currentLeftBoundX = Canvas.width / 2 - LevelGenerator.startingRiverWidth / 2;
+    this.currentRightBoundX = Canvas.width / 2 + LevelGenerator.startingRiverWidth / 2;
+  }
 
   public static generate(): Level {
     this.changeRiverWidth(this.startingRiverWidth);
@@ -46,7 +60,12 @@ export default class LevelGenerator {
     for (let i = 0; i < this.levelHeight / this.sectionHeight; i++) {
       this.sectionPositionY = -this.sectionHeight * (i + 1);
 
-      this.addGrassToSection(level);
+      if (i == 0) {
+        this.addGrassToSection(level, this.riverBorderWidth / 2);
+      }
+      else {
+        this.addGrassToSection(level, this.riverMaxAmplitude);
+      }
 
       const enoughPlaceForHouses = (Canvas.width - this.riverWidth) / 2 > this.houseAndTreeWidth;
       const generateHouses = getRandomInt(0, 5) == 0 ? true : false; // 25 %
@@ -54,6 +73,8 @@ export default class LevelGenerator {
         const numberOfHouses = getRandomInt(1, 4); // 1 - 3 houses
         this.addHousesToSection(level, numberOfHouses);
       }
+
+      this.addBoundsToSection(level);
 
       if (i == this.levelHeight / this.sectionHeight - 1) { // last section
         this.transitionRiverWidth(level, this.startingRiverWidth);
@@ -85,7 +106,7 @@ export default class LevelGenerator {
 
   private static getRandomRiverWidth(): number {
     const maxRiverWidths = (Canvas.width - this.minimumGrassWidth * 2) / this.minimalRiverChangeWidth;
-    const countOfRiverWidths = getRandomInt(1, maxRiverWidths + 1);
+    const countOfRiverWidths = getRandomInt(2, maxRiverWidths);
     const newRiverWidth = countOfRiverWidths * this.minimalRiverChangeWidth;
 
     return newRiverWidth;
@@ -95,12 +116,12 @@ export default class LevelGenerator {
     const startingLeftBoundX = Canvas.width / 2 - this.startingRiverWidth / 2;
     const startingRightBoundX = Canvas.width / 2 + this.startingRiverWidth / 2;
 
-    const leftRunway = new Runway(startingLeftBoundX, this.runwayHeight);
-    const rightRunway = new Runway(Canvas.width - startingRightBoundX, this.runwayHeight);
+    const leftRunway = new Runway(startingLeftBoundX + this.riverBorderWidth / 2, this.runwayHeight);
+    const rightRunway = new Runway(Canvas.width - startingRightBoundX + this.riverBorderWidth / 2, this.runwayHeight);
 
     // position at the center of the first section
     leftRunway.position.set(0, -(this.sectionHeight / 2) - this.runwayHeight / 2);
-    rightRunway.position.set(startingRightBoundX, -(this.sectionHeight / 2) - this.runwayHeight / 2);
+    rightRunway.position.set(startingRightBoundX - this.riverBorderWidth / 2, -(this.sectionHeight / 2) - this.runwayHeight / 2);
 
     level.objects.push(leftRunway, rightRunway);
     level.staticObjects.push(leftRunway, rightRunway);
@@ -108,7 +129,8 @@ export default class LevelGenerator {
 
   private static addBridgeToLevel(level: Level): LevelBridge {
     const bridge = new LevelBridge(this.bridgeWidth, this.bridgeHeight);
-    bridge.position.set(this.leftBoundX, -(this.sectionHeight / 2) - this.runwayHeight / 2);
+    bridge.position.set(this.leftBoundX - this.riverBorderWidth / 2, -(this.sectionHeight / 2) - this.runwayHeight / 2);
+    bridge.zIndex = 2;
 
     level.objects.push(bridge);
     level.bridge = bridge;
@@ -116,14 +138,61 @@ export default class LevelGenerator {
     return bridge;
   }
 
-  private static addGrassToSection(level: Level): void {
-    const leftGrass = new Grass(this.leftBoundX, this.sectionHeight);
-    const rightGrass = new Grass(Canvas.width - this.rightBoundX, this.sectionHeight);
-    leftGrass.position.set(0, this.sectionPositionY);
-    rightGrass.position.set(this.rightBoundX, this.sectionPositionY);
+  private static addGrassToSection(level: Level, maxRiverAmplitude: number): void {
+    let previousAmplitude = this.amplitude;
 
-    level.objects.push(leftGrass, rightGrass);
-    level.staticObjects.push(leftGrass, rightGrass);
+    for (let i = 0; i < this.sectionHeight / this.riverChangeStepHeight; i++) {
+      const positionY = this.sectionPositionY + this.sectionHeight - i * this.riverChangeStepHeight;
+      let amplitudeChange = this.currentLeftBoundX == this.leftBoundX ? getRandomInt(0, this.riverMaxSingleAmplitude + 1) : 0;
+
+      if (this.currentLeftBoundX > this.leftBoundX) {
+        this.currentLeftBoundX -= this.riverChangeStepWidth;
+        this.currentRightBoundX += this.riverChangeStepWidth;
+        if (this.currentLeftBoundX < this.leftBoundX)
+          this.currentLeftBoundX = this.leftBoundX;
+      }
+      else if (this.currentLeftBoundX < this.leftBoundX) {
+        this.currentLeftBoundX += this.riverChangeStepWidth;
+        this.currentRightBoundX -= this.riverChangeStepWidth;
+        if (this.currentLeftBoundX > this.leftBoundX)
+          this.currentLeftBoundX = this.leftBoundX;
+      }
+
+      if (this.amplitudeDirection == 'right') {
+        this.amplitude = previousAmplitude + amplitudeChange;
+        if (this.amplitude > maxRiverAmplitude) {
+          this.amplitude = maxRiverAmplitude;
+          this.amplitudeDirection = 'left';
+        }
+      }
+      else {
+        this.amplitude = previousAmplitude - amplitudeChange;
+        if (this.amplitude < -maxRiverAmplitude) {
+          this.amplitude = -maxRiverAmplitude;
+          this.amplitudeDirection = 'right';
+        }
+      }
+
+      const leftGrassWidth = this.currentLeftBoundX + this.amplitude;
+      const rightGrassWidth = Canvas.width - this.currentRightBoundX - this.amplitude;
+
+      const leftGrass = new Grass(leftGrassWidth, this.riverChangeStepHeight);
+      const rightGrass = new Grass(rightGrassWidth, this.riverChangeStepHeight);
+      const leftRiverBorder = new Rectangle(this.riverBorderWidth, this.riverChangeStepHeight, this.riverBorderColor);
+      const rightRiverBorder = new Rectangle(this.riverBorderWidth, this.riverChangeStepHeight, this.riverBorderColor);
+
+      leftGrass.position.set(0, positionY);
+      rightGrass.position.set(this.currentRightBoundX + this.amplitude, positionY);
+      leftRiverBorder.position.set(leftGrassWidth, positionY);
+      rightRiverBorder.position.set(rightGrass.position.x - this.riverBorderWidth, positionY);
+      leftRiverBorder.zIndex = 1;
+      rightRiverBorder.zIndex = 1;
+
+      level.objects.push(leftGrass, rightGrass, leftRiverBorder, rightRiverBorder);
+      level.staticObjects.push(leftGrass, rightGrass, leftRiverBorder, rightRiverBorder);
+
+      previousAmplitude = this.amplitude;
+    }
   }
 
   private static addHousesToSection(level: Level, count: number): void {
@@ -213,7 +282,7 @@ export default class LevelGenerator {
 
     for (let i = 0; i < count; i++) {
       const isShip = getRandomInt(0, 2) == 0 ? false : true;
-      let enemy; 
+      let enemy;
       if (isShip)
         enemy = new Ship(this.shipWidth, this.shipHeight);
       else
@@ -263,42 +332,10 @@ export default class LevelGenerator {
   }
 
   private static transitionRiverWidth(level: Level, newWidth?: number): void {
-    const stepGrasses: Grass[] = [];
-
-    const oldRiverWidth = this.riverWidth;
-    const oldRightBoundX = this.rightBoundX;
-    const oldLeftBoundX = this.leftBoundX;
-
     let newRiverWidth = newWidth;
     if (!newRiverWidth)
       newRiverWidth = this.getRandomRiverWidth();
 
     this.changeRiverWidth(newRiverWidth);
-
-    const halfDifference = (newRiverWidth - oldRiverWidth) / 2;
-    const countOfSteps = Math.abs(halfDifference) / this.riverChangeStepWidth;
-
-    for (let i = 1; i <= countOfSteps; i++) {
-      const stepGrassWidth = Math.abs(halfDifference) - i * this.riverChangeStepWidth;
-      const leftStepGrass = new Grass(stepGrassWidth, this.riverChangeStepHeight);
-      const rightStepGrass = new Grass(stepGrassWidth, this.riverChangeStepHeight);
-
-      let stepGrassPosY;
-      if (halfDifference > 0) {
-        stepGrassPosY = this.sectionPositionY - i * this.riverChangeStepHeight;
-        leftStepGrass.position.set(this.leftBoundX, stepGrassPosY);
-        rightStepGrass.position.set(oldRightBoundX + i * this.riverChangeStepWidth, stepGrassPosY);
-      }
-      else {
-        stepGrassPosY = this.sectionPositionY + (i - 1) * this.riverChangeStepHeight;
-        leftStepGrass.position.set(oldLeftBoundX, stepGrassPosY);
-        rightStepGrass.position.set(this.rightBoundX + i * this.riverChangeStepWidth, stepGrassPosY);
-      }
-
-      stepGrasses.push(leftStepGrass, rightStepGrass);
-    }
-
-    level.objects.push(...stepGrasses);
-    level.staticObjects.push(...stepGrasses);
   }
 }
