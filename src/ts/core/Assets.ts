@@ -6,6 +6,7 @@ export default class Assets {
   private static paths: imagesToLoad = {
     activision: new URL('../../assets/activision.png', import.meta.url).pathname,
     sprite: new URL('../../assets/sprite.png', import.meta.url).pathname,
+    atari8: new URL('../../assets/atari8.png', import.meta.url).pathname,
   };
 
   public static async loadImages(): Promise<void> {

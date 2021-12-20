@@ -6,6 +6,7 @@ import { EnemyType } from "./EnemyType";
 export default class Chopper extends Chopper1Right {
   public enemyType: EnemyType = EnemyType.Chopper;
   public pointsForDestruction: number = 60;
+  public thresholdY: number = 200;
 
   public isMoving: boolean = false;
   public velocityX: number = 0;

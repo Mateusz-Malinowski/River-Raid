@@ -6,6 +6,7 @@ import { EnemyType } from "./EnemyType";
 export default class Ship extends ShipObjectRight {
   public enemyType: EnemyType = EnemyType.Ship;
   public pointsForDestruction: number = 30;
+  public thresholdY: number = 200;
 
   public isMoving: boolean = false;
   public velocityX: number = 0;

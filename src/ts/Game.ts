@@ -25,7 +25,7 @@ export default class Game {
   private background: Rectangle;
   private gameInfo: GameInfo;
 
-  private riverColorNormal: string = '#2d32b8';
+  private riverColorNormal: string = '#0243db';
   private riverColorAnomaly: string = '#803228';
   private gameInfoHeight: number = 250;
   private playerDistance: number = 100;
@@ -135,13 +135,13 @@ export default class Game {
 
   private updateEnemies(delta: number): void {
     for (const enemy of this.currentLevel.enemyObjects) {
-      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= 200) {
+      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= enemy.thresholdY) {
         enemy.startMoving();
       }
       enemy.render(this.currentLevel, delta);
     }
     for (const enemy of this.previousLevel.enemyObjects) {
-      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= 200)
+      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= enemy.thresholdY)
         enemy.startMoving();
       enemy.render(this.previousLevel, delta);
     }

@@ -12,6 +12,9 @@ import Ship from "./enemies/Ship";
 import Chopper from "./enemies/Chopper";
 import { Enemy } from "./enemies/Enemy";
 import Rectangle from "./objects/basic/Rectangle";
+import Plane from "./enemies/Plane";
+import BigMountains from "./objects/image-objects/map/BigMountains";
+import SmallMountains from "./objects/image-objects/map/SmallMountains";
 
 export default class LevelGenerator {
   public static levelHeight: number = 8000;
@@ -29,6 +32,10 @@ export default class LevelGenerator {
   private static runwayHeight: number = 200;
   private static houseAndTreeWidth: number = 160;
   private static houseAndTreeHeight: number = 95;
+  private static bigMountainsWidth: number = 216;
+  private static bigMountainsHeight: number = 66;
+  private static smallMountainsWidth: number = 144;
+  private static smallMountainsHeight: number = 42;
   private static bridgeWidth: number = LevelGenerator.startingRiverWidth + LevelGenerator.riverBorderWidth;
   private static bridgeHeight: number = LevelGenerator.runwayHeight;
   private static fuelWidth: number = 80;
@@ -37,6 +44,8 @@ export default class LevelGenerator {
   private static shipHeight: number = 48;
   private static chopperWidth: number = 96;
   private static chopperHeight: number = 60;
+  private static planeWidth: number = 96;
+  private static planeHeight: number = 36;
 
   private static riverWidth: number;
   private static leftBoundX: number;
@@ -67,14 +76,13 @@ export default class LevelGenerator {
         this.addGrassToSection(level, this.riverMaxAmplitude);
       }
 
-      const enoughPlaceForHouses = (Canvas.width - this.riverWidth) / 2 > this.houseAndTreeWidth;
-      const generateHouses = getRandomInt(0, 5) == 0 ? true : false; // 25 %
-      if (i != 0 && enoughPlaceForHouses && generateHouses) {
-        const numberOfHouses = getRandomInt(1, 4); // 1 - 3 houses
-        this.addHousesToSection(level, numberOfHouses);
+      const enoughPlaceForMountains = (Canvas.width - this.riverWidth - this.riverMaxAmplitude) / 2 > this.bigMountainsWidth;
+      const generateMountains = getRandomInt(0, 5) == 0 ? true : false; // 25 %
+      if (i != 0 && enoughPlaceForMountains && generateMountains) {
+        const numberOfMountains = getRandomInt(1, 4); // 1 - 3 houses
+        this.addMountainsToSection(level, numberOfMountains);
       }
 
-      this.addBoundsToSection(level);
 
       if (i == this.levelHeight / this.sectionHeight - 1) { // last section
         this.transitionRiverWidth(level, this.startingRiverWidth);
@@ -94,6 +102,9 @@ export default class LevelGenerator {
 
     const numberOfShipsAndChoppers = getRandomInt(2, 11);
     this.addShipsAndChoppersToLevel(level, numberOfShipsAndChoppers);
+
+    const numberOfPlanes = getRandomInt(4, 10);
+    this.addPlanesToLevel(level, numberOfPlanes);
 
     return level;
   }
@@ -236,6 +247,52 @@ export default class LevelGenerator {
     level.staticObjects.push(...houses);
   }
 
+  private static addMountainsToSection(level: Level, count: number): void {
+    const mountainsObjects: Array<BigMountains | SmallMountains> = [];
+
+    for (let i = 0; i < count; i++) {
+      const isOnLeftSide = getRandomInt(0, 2) == 0 ? false : true; // 50%
+      const smallMountains = getRandomInt(0, 2) == 0 ? false : true; // 50%
+      let mountains;
+      if (smallMountains)
+        mountains = new SmallMountains(this.smallMountainsWidth, this.smallMountainsHeight);
+      else
+        mountains = new BigMountains(this.bigMountainsWidth, this.bigMountainsHeight);
+
+      const minPositionY = this.sectionPositionY;
+      const maxPositionY = this.sectionPositionY + this.sectionHeight - mountains.height;
+
+      let minPositionX, maxPositionX, positionX, positionY;
+      if (isOnLeftSide) {
+        minPositionX = 0;
+        maxPositionX = this.leftBoundX - this.riverMaxAmplitude - mountains.width;
+      }
+      else {
+        minPositionX = this.rightBoundX + this.riverMaxAmplitude;
+        maxPositionX = Canvas.width - mountains.width;
+      }
+
+      let isColliding;
+      do {
+        isColliding = false;
+        positionX = getRandomInt(minPositionX, maxPositionX);
+        positionY = getRandomInt(minPositionY, maxPositionY);
+        mountains.position.set(positionX, positionY);
+
+        for (const existingMountains of mountainsObjects) {
+          if (objectsPositionColliding(mountains, existingMountains)) {
+            isColliding = true;
+            break;
+          }
+        }
+      } while (isColliding);
+
+      mountainsObjects.push(mountains);
+    }
+    level.objects.push(...mountainsObjects);
+    level.staticObjects.push(...mountainsObjects);
+  }
+
   private static addFuelBarrelsToLevel(level: Level, count: number): void {
     const fuelBarrels: LevelFuel[] = [];
 
@@ -320,6 +377,36 @@ export default class LevelGenerator {
 
     level.objects.push(...shipsAndChoppers);
     level.enemyObjects.push(...shipsAndChoppers);
+  }
+
+  private static addPlanesToLevel(level: Level, count: number): void {
+    const planes: Plane[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const plane = new Plane(this.planeWidth, this.planeHeight);
+      const minPositionY = -this.levelHeight;
+      const maxPositionY = 0 - plane.height - this.sectionHeight;
+      const positionX = Canvas.width;
+
+      let isColliding, positionY;
+      do {
+        isColliding = false;
+        positionY = getRandomInt(minPositionY, maxPositionY + 1);
+        plane.position.set(positionX, positionY);
+
+        for (const existingPlane of planes) {
+          if (objectsYAxisColliding(existingPlane, plane)) {
+            isColliding = true;
+            break;
+          }
+        }
+      } while (isColliding);
+
+      planes.push(plane);
+    }
+
+    level.objects.push(...planes);
+    level.enemyObjects.push(...planes);
   }
 
   private static addBoundsToSection(level: Level): void {
