@@ -1,5 +1,7 @@
 export enum EnemyType {
   Ship,
+  Balloon,
   Chopper,
-  Plane
+  Plane,
+  Tank,
 }

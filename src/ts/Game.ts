@@ -112,8 +112,11 @@ export default class Game {
 
   private addMap(): void {
     this.currentLevel = LevelGenerator.generate();
-    // remove bridge from first level
+
+    // remove bridge and tank from the first level
     removeElementFromArray(this.currentLevel.objects, this.currentLevel.bridge);
+    removeElementFromArray(this.currentLevel.objects, this.currentLevel.tank);
+    removeElementFromArray(this.currentLevel.enemyObjects, this.currentLevel.tank);
 
     this.currentLevelAtStart.copy(this.currentLevel);
 
@@ -145,6 +148,11 @@ export default class Game {
         enemy.startMoving();
       enemy.render(this.previousLevel, delta);
     }
+    for (const enemy of this.nextLevel.enemyObjects) {
+      if (!enemy.isMoving && objectsRealPositionYDifference(this.player.object, enemy) <= enemy.thresholdY)
+        enemy.startMoving();
+      enemy.render(this.nextLevel, delta);
+    }
   }
 
   private handleCollisions(delta: number): void {
@@ -167,6 +175,13 @@ export default class Game {
       }
     }
 
+    for (const object of this.nextLevel.staticObjects) {
+      if (objectsRealPositionColliding(object, this.player.object)) {
+        this.destroyPlayer();
+        break;
+      }
+    }
+
     for (const barrel of this.currentLevel.fuelBarrels) {
       if (objectsRealPositionColliding(barrel, this.player.object)) {
         this.fuel += this.refuelRate * delta;
@@ -176,6 +191,14 @@ export default class Game {
     }
 
     for (const barrel of this.previousLevel.fuelBarrels) {
+      if (objectsRealPositionColliding(barrel, this.player.object)) {
+        this.fuel += this.refuelRate * delta;
+        if (this.fuel > 1) this.fuel = 1;
+        this.gameInfo.fuelIndicator.setHand(this.fuel);
+      }
+    }
+
+    for (const barrel of this.nextLevel.fuelBarrels) {
       if (objectsRealPositionColliding(barrel, this.player.object)) {
         this.fuel += this.refuelRate * delta;
         if (this.fuel > 1) this.fuel = 1;
@@ -199,8 +222,21 @@ export default class Game {
       }
     }
 
+    for (const enemyObject of this.nextLevel.enemyObjects) {
+      if (objectsRealPositionColliding(enemyObject, this.player.object)) {
+        this.destroyEnemy(this.nextLevel, enemyObject);
+        this.destroyPlayer();
+        break;
+      }
+    }
+
     if (objectsRealPositionColliding(this.nextLevel.bridge, this.player.object)) {
       this.destroyPlayer();
+
+      if (objectsRealPositionColliding(this.nextLevel.tank, this.nextLevel.bridge))
+        this.destroyEnemy(this.nextLevel, this.nextLevel.tank);
+      removeElementFromArray(this.nextLevel.enemyObjects, this.nextLevel.tank);
+
       this.progressLevel();
       this.destroyCurrentBridge();
       this.winkRiver();
@@ -216,6 +252,13 @@ export default class Game {
     }
 
     for (const object of this.previousLevel.staticObjects) {
+      for (const bullet of this.player.bullets) {
+        if (objectsRealPositionColliding(object, bullet))
+          this.destroyBullet(bullet);
+      }
+    }
+
+    for (const object of this.nextLevel.staticObjects) {
       for (const bullet of this.player.bullets) {
         if (objectsRealPositionColliding(object, bullet))
           this.destroyBullet(bullet);
@@ -240,6 +283,15 @@ export default class Game {
       }
     }
 
+    for (const fuelBarrel of this.nextLevel.fuelBarrels) {
+      for (const bullet of this.player.bullets) {
+        if (objectsRealPositionColliding(fuelBarrel, bullet)) {
+          this.destroyBullet(bullet);
+          this.destroyFuelBarrel(this.nextLevel, fuelBarrel);
+        }
+      }
+    }
+
     for (const enemyObject of this.currentLevel.enemyObjects) {
       for (const bullet of this.player.bullets) {
         if (objectsRealPositionColliding(enemyObject, bullet)) {
@@ -258,9 +310,23 @@ export default class Game {
       }
     }
 
+    for (const enemyObject of this.nextLevel.enemyObjects) {
+      for (const bullet of this.player.bullets) {
+        if (objectsRealPositionColliding(enemyObject, bullet)) {
+          this.destroyBullet(bullet);
+          this.destroyEnemy(this.nextLevel, enemyObject);
+        }
+      }
+    }
+
     for (const bullet of this.player.bullets) {
       if (objectsRealPositionColliding(this.nextLevel.bridge, bullet)) {
         this.destroyBullet(bullet);
+        
+        if (objectsRealPositionColliding(this.nextLevel.tank, this.nextLevel.bridge))
+          this.destroyEnemy(this.nextLevel, this.nextLevel.tank);
+        removeElementFromArray(this.nextLevel.enemyObjects, this.nextLevel.tank);
+
         this.progressLevel();
         this.destroyCurrentBridge();
         this.winkRiver();

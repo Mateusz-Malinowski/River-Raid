@@ -15,6 +15,9 @@ import Rectangle from "./objects/basic/Rectangle";
 import Plane from "./enemies/Plane";
 import BigMountains from "./objects/image-objects/map/BigMountains";
 import SmallMountains from "./objects/image-objects/map/SmallMountains";
+import Tank from "./enemies/Tank";
+import { EnemyType } from "./enemies/EnemyType";
+import Balloon from "./enemies/Balloon";
 
 export default class LevelGenerator {
   public static levelHeight: number = 8000;
@@ -46,6 +49,10 @@ export default class LevelGenerator {
   private static chopperHeight: number = 60;
   private static planeWidth: number = 96;
   private static planeHeight: number = 36;
+  private static tankWidth: number = 96;
+  private static tankHeight: number = 54;
+  private static baloonWidth: number = 96;
+  private static baloonHeight: number = 126;
 
   private static riverWidth: number;
   private static leftBoundX: number;
@@ -97,14 +104,16 @@ export default class LevelGenerator {
     this.addRunwayToLevel(level);
     this.addBridgeToLevel(level);
 
-    const numberOfFuelBarrels = getRandomInt(5, 16);
+    const numberOfFuelBarrels = getRandomInt(10, 16);
     this.addFuelBarrelsToLevel(level, numberOfFuelBarrels);
 
-    const numberOfShipsAndChoppers = getRandomInt(2, 11);
-    this.addShipsAndChoppersToLevel(level, numberOfShipsAndChoppers);
+    const numberOfRiverEnemies = getRandomInt(10, 20);
+    this.addRiverEnemiesToLevel(level, numberOfRiverEnemies);
 
-    const numberOfPlanes = getRandomInt(4, 10);
+    const numberOfPlanes = getRandomInt(10, 20);
     this.addPlanesToLevel(level, numberOfPlanes);
+
+    this.addTankToLevel(level);
 
     return level;
   }
@@ -200,7 +209,7 @@ export default class LevelGenerator {
       rightRiverBorder.zIndex = 1;
 
       level.objects.push(leftGrass, rightGrass, leftRiverBorder, rightRiverBorder);
-      level.staticObjects.push(leftGrass, rightGrass, leftRiverBorder, rightRiverBorder);
+      level.staticObjects.push(leftGrass, rightGrass);
 
       previousAmplitude = this.amplitude;
     }
@@ -334,17 +343,20 @@ export default class LevelGenerator {
     level.fuelBarrels.push(...fuelBarrels);
   }
 
-  private static addShipsAndChoppersToLevel(level: Level, count: number): void {
-    const shipsAndChoppers: Enemy[] = [];
+  private static addRiverEnemiesToLevel(level: Level, count: number): void {
+    const riverEnemies: Enemy[] = [];
 
     for (let i = 0; i < count; i++) {
-      const isShip = getRandomInt(0, 2) == 0 ? false : true;
+      const index = getRandomInt(0, 3);
       let enemy;
-      if (isShip)
+      if (index == 0)
         enemy = new Ship(this.shipWidth, this.shipHeight);
-      else
+      else if (index == 1)
         enemy = new Chopper(this.chopperWidth, this.chopperHeight);
+      else if (index == 2)
+        enemy = new Balloon(this.baloonWidth, this.baloonHeight);
 
+      enemy.zIndex = 3;
       const minPositionX = this.minimumGrassWidth;
       const maxPositionX = Canvas.width - enemy.width - this.minimumGrassWidth;
       const minPositionY = -this.levelHeight;
@@ -357,8 +369,8 @@ export default class LevelGenerator {
         positionY = getRandomInt(minPositionY, maxPositionY + 1);
         enemy.position.set(positionX, positionY);
 
-        for (const existingShip of shipsAndChoppers) {
-          if (objectsYAxisColliding(existingShip, enemy)) {
+        for (const exisitingEnemy of riverEnemies) {
+          if (objectsYAxisColliding(exisitingEnemy, enemy)) {
             isColliding = true;
             break;
           }
@@ -372,11 +384,11 @@ export default class LevelGenerator {
         }
       } while (isColliding);
 
-      shipsAndChoppers.push(enemy);
+      riverEnemies.push(enemy);
     }
 
-    level.objects.push(...shipsAndChoppers);
-    level.enemyObjects.push(...shipsAndChoppers);
+    level.objects.push(...riverEnemies);
+    level.enemyObjects.push(...riverEnemies);
   }
 
   private static addPlanesToLevel(level: Level, count: number): void {
@@ -407,6 +419,21 @@ export default class LevelGenerator {
 
     level.objects.push(...planes);
     level.enemyObjects.push(...planes);
+  }
+
+  private static addTankToLevel(level: Level): void {
+    const tank = new Tank(this.tankWidth, this.tankHeight);
+
+    tank.position.set(
+      this.rightBoundX + tank.width,
+      -(this.sectionHeight / 2) - tank.height / 2
+    );
+
+    tank.zIndex = 3;
+
+    level.objects.push(tank);
+    level.enemyObjects.push(tank);
+    level.tank = tank;
   }
 
   private static addBoundsToSection(level: Level): void {
